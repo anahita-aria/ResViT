@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from einops import rearrange
-from model.Resnet50 import ResNet50
+from model.ResNet50 import ResNet50
 
 class Residual(nn.Module):
     def __init__(self, fn):
