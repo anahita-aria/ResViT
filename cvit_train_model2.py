@@ -44,8 +44,8 @@ parser.add_option("-d", "--dir", dest='dir', help='Training data path.')
 parser.add_option("-b", "--batch", type=int, dest='batch', help='Batch size.')
 parser.add_option("-l", "--rate",  type=float, dest='rate', help='Learning rate.')
 parser.add_option("-w", "--decay", type=float, dest='decay', help='Weight decay.')
-parser.add_option("-wa", "--weight-address", type="string", dest='wa', help='Weight address.')
-parser.add_option("-dsname", "--dataset-name", type="string", dest='dsname', help='dataset name.')
+#parser.add_option("-wa", "--weight-address", type="string", dest='wa', help='Weight address.')
+#parser.add_option("-dsname", "--dataset-name", type="string", dest='dsname', help='dataset name.')
 
 (options,args) = parser.parse_args()
 
@@ -175,14 +175,14 @@ def train_gpu(model, criterion, optimizer, scheduler, num_epochs, min_val_loss):
     # load best model weights
     model.load_state_dict(best_model_wts)
 
-    with open(wa+'weight/weights.pkl', 'wb') as f:
+    with open('/kaggle/working/ResViT/weight/weights.pkl', 'wb') as f:
         pickle.dump([train_loss, train_accu, val_loss, val_accu], f)
 
     state = {'epoch': num_epochs+1, 
              'state_dict': model.state_dict(),
              'optimizer': optimizer.state_dict(),
              'min_loss':epoch_loss}
-    torch.save(state, wa+'weight/weights.pth')
+    torch.save(state,'/kaggle/working/ResViT/weight/weights.pth')
     test(model)
     # summarize history for accuracy
     f1 = plt.figure()
@@ -192,7 +192,7 @@ def train_gpu(model, criterion, optimizer, scheduler, num_epochs, min_val_loss):
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
-    plt.savefig( 'ResVit_Accu_'+dsname+'.png' )
+    plt.savefig( 'ResVit_Accu_NeuralTexture.png' )
     # # summarize history for loss
     f2 = plt.figure()
     plt.plot([*range(0, num_epochs, 1)], train_loss)
@@ -201,7 +201,7 @@ def train_gpu(model, criterion, optimizer, scheduler, num_epochs, min_val_loss):
     plt.ylabel('loss resnet 50')
     plt.xlabel('epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
-    plt.savefig( 'ResViT_Loss_'+dsname+'.png' )
+    plt.savefig( 'ResViT_Loss_NeuralTexture.png' )
     
     return train_loss,train_accu,val_loss,val_accu, min_loss
 
