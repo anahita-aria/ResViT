@@ -19,7 +19,7 @@ sys.path.insert(1,'helpers')
 sys.path.insert(1,'model')
 sys.path.insert(1,'weight')
 
-from model.cvit import CViT
+from model.ResViT import ResViT
 from helpers.helpers_read_video_1 import VideoReader
 from helpers.helpers_face_extract_1 import FaceExtractor
 
@@ -48,7 +48,7 @@ filenames = sorted([x for x in os.listdir(sample) if x[-4:] == ".mp4"]) #[ran_mi
 mtcnn = MTCNN(select_largest=False, keep_all=True, post_process=False, device=device)
 
 #load cvit model
-model = CViT(image_size=224, patch_size=7, num_classes=2, channels=512,
+model = ResViT(image_size=224, patch_size=7, num_classes=2, channels=512,
              dim=1024, depth=6, heads=8, mlp_dim=2048)
 model.to(device)
 
