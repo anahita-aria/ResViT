@@ -27,8 +27,8 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 from helpers.blazeface import BlazeFace
 facedet = BlazeFace().to(device)
-facedet.load_weights("C:/Users/Anahita/thesis/CViT/CViT/helpers/blazeface.pth")
-facedet.load_anchors("C:/Users/Anahita/thesis/CViT/CViT/helpers/anchors.npy")
+facedet.load_weights("/kaggle/working/ResViT/helpers/blazeface.pth")
+facedet.load_anchors("/kaggle/working/ResViT/helpers/anchors.npy")
 _ = facedet.train(False)
 
 mean = [0.485, 0.456, 0.406]
@@ -39,7 +39,7 @@ normalize_transform = transforms.Compose([
 )
 
 tresh=50
-sample='C:/Users/Anahita/thesis/CViT/sample__prediction_data/'
+sample='/kaggle/working/ResViT/sample__prediction_data/'
 
 ran = random.randint(0,400)
 ran_min = abs(ran-1)
@@ -53,7 +53,7 @@ model = CViT(image_size=224, patch_size=7, num_classes=2, channels=512,
 model.to(device)
 
 #checkpoint = torch.load('weight/deepfake_cvit_gpu_inference_ep_50.pth') # for GPU
-checkpoint = torch.load('C:/Users/Anahita/thesis/CViT/weight/weights.pth', map_location=torch.device('cpu'))
+checkpoint = torch.load('/kaggle/working/ResViT/weight/weights.pth', map_location=torch.device('cpu'))
 model.load_state_dict(checkpoint)
 _ = model.eval()
 
