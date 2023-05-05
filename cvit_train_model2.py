@@ -192,7 +192,7 @@ def train_gpu(model, criterion, optimizer, scheduler, num_epochs, min_val_loss):
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
-    plt.savefig( 'ResVit_Accu_NeuralTexture.png' )
+    plt.savefig( 'ResVit_Accu_Face2Face.png' )
     # # summarize history for loss
     f2 = plt.figure()
     plt.plot([*range(0, num_epochs, 1)], train_loss)
@@ -201,7 +201,7 @@ def train_gpu(model, criterion, optimizer, scheduler, num_epochs, min_val_loss):
     plt.ylabel('loss resnet 50')
     plt.xlabel('epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
-    plt.savefig( 'ResViT_Loss_NeuralTexture.png' )
+    plt.savefig( 'ResViT_Loss_Face2Face.png' )
     
     return train_loss,train_accu,val_loss,val_accu, min_loss
 
