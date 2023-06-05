@@ -76,7 +76,8 @@ model = ResViT(image_size=224, patch_size=7, num_classes=2, channels=512,
             dim=1024, depth=6, heads=8, mlp_dim=2048)
 model.to(device)
 # optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+# optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+optimizer = optim.Adamax(model.parameters(), lr=lr)
 criterion = torch.nn.CrossEntropyLoss()
 criterion.to(device)
 num_epochs = epoch
