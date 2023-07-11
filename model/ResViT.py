@@ -233,20 +233,21 @@ class ResViT(nn.Module):
         )
 
     def forward(self, img, mask=None):
-    p = self.patch_size
-    x = self.features(img)
-    b, c, h, w = x.shape
+        p = self.patch_size
+        x = self.features(img)
+        b, c, h, w = x.shape
+    
+        x = rearrange(x, 'b c h w -> b (h w) c')  # Rearrange dimensions
+        cls_tokens = self.to_cls_token(self.pos_embedding[:, :1, :])  # Use pos_embedding as the cls_token
+        cls_tokens = cls_tokens.expand(-1, x.size(1), -1)  # Expand cls_tokens to match the number of patches
+        cls_tokens = cls_tokens[:, :x.size(1), :]  # Trim cls_tokens to match the number of patches in x
+        x = torch.cat((cls_tokens, x), dim=1)
+    
+        x += self.pos_embedding[:, :x.size(1)]  # Add positional embeddings to the patches
+        x = self.transformer(x, mask)
+        x = x.mean(dim=1)  # Average pooling over the patches
+        return self.mlp_head(x)
 
-    x = rearrange(x, 'b c h w -> b (h w) c')  # Rearrange dimensions
-    cls_tokens = self.to_cls_token(self.pos_embedding[:, :1, :])  # Use pos_embedding as the cls_token
-    cls_tokens = cls_tokens.expand(-1, x.size(1), -1)  # Expand cls_tokens to match the number of patches
-    cls_tokens = cls_tokens[:, :x.size(1), :]  # Trim cls_tokens to match the number of patches in x
-    x = torch.cat((cls_tokens, x), dim=1)
-
-    x += self.pos_embedding[:, :x.size(1)]  # Add positional embeddings to the patches
-    x = self.transformer(x, mask)
-    x = x.mean(dim=1)  # Average pooling over the patches
-    return self.mlp_head(x)
 
 
     
