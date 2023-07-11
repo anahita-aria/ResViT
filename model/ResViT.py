@@ -249,9 +249,10 @@ class ResViT(nn.Module):
         pos_emb = self.pos_embedding[:, :x.size(1)]
         pos_emb = pos_emb.unsqueeze(0).unsqueeze(0)  # Unsqueezing twice
 
-        # Repeat along the first and second dimensions, matching the dimensions of `x`
-        repeat_dims = (x.size(0), x.size(1), 1)
-        pos_emb = pos_emb.repeat(*repeat_dims)
+        # Expand dimensions to match the dimensions of 'x'
+        expand_dims = tuple(x.size(dim) for dim in range(pos_emb.dim()))
+        pos_emb = pos_emb.expand(*expand_dims)
+
 
 
         x += pos_emb
