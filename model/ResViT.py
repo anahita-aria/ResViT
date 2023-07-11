@@ -254,6 +254,3 @@ class ResViT(nn.Module):
         x = self.transformer(x, mask)
         x = x.mean(dim=1)  # Average pooling over the patches
         return self.mlp_head(x)
-
-
-
