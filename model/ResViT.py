@@ -206,7 +206,7 @@ class ResViT(nn.Module):
             patch_size=7,
             num_classes=2,
             channels=2048,
-            dim=1024,  # Update the dim parameter to match the expected input dimension of the transformer
+            dim=1024,
             depth=6,
             heads=8,
             mlp_dim=2048
@@ -216,12 +216,12 @@ class ResViT(nn.Module):
 
         self.features = nn.Sequential(*list(resnet50(pretrained=True).children())[:-2])  # Use pre-trained ResNet50 features
 
-        num_patches = (image_size // patch_size) ** 2
+        num_patches = (image_size // patch_size) ** 2  # Update the calculation of num_patches
         patch_dim = channels * patch_size ** 2
 
         self.patch_size = patch_size
 
-        self.pos_embedding = nn.Parameter(torch.randn(1, num_patches + 1, dim))  # Update the shape of pos_embedding
+        self.pos_embedding = nn.Parameter(torch.randn(1, num_patches + 1, dim))
         self.transformer = Transformer(dim, depth, heads, mlp_dim)
 
         self.to_cls_token = nn.Identity()
@@ -236,16 +236,15 @@ class ResViT(nn.Module):
         p = self.patch_size
         x = self.features(img)
         b, c, h, w = x.shape
-        x = rearrange(x, 'b c h w -> b (h w) c')  # Rearrange dimensions
 
-        cls_tokens = self.to_cls_token(self.pos_embedding[:, :1, :])  # Use pos_embedding as the cls_token
+        x = rearrange(x, 'b c h w -> b (h w) c')  # Rearrange dimensions
+        cls_tokens = self.to        cls_tokens = self.to_cls_token(self.pos_embedding[:, :1, :])  # Use pos_embedding as the cls_token
         x = torch.cat((cls_tokens, x), dim=1)
 
         x += self.pos_embedding[:, :x.size(1)]  # Add positional embeddings to the patches
         x = self.transformer(x, mask)
         x = x.mean(dim=1)  # Average pooling over the patches
         return self.mlp_head(x)
-
 
     
         
