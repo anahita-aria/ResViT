@@ -250,7 +250,8 @@ class ResViT(nn.Module):
         x = torch.cat((cls_tokens, x), dim=2)  # Concatenate along dimension 2
     
         pos_emb = self.pos_embedding[:, :x.size(1)]  # Trim pos_embedding to match the number of patches in x
-        pos_emb = pos_emb.unsqueeze(0).expand(x.size(0), -1, -1)  # Expand pos_emb to match the batch size
+        #pos_emb = pos_emb.unsqueeze(0).expand(x.size(0), -1, -1)  # Expand pos_emb to match the batch size
+        pos_emb = pos_emb.unsqueeze(0).expand(x.size(0), 1, 49, 1024)
     
         x += pos_emb  # Add positional embeddings to the patches
         x = self.transformer(x, mask)
