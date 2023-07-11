@@ -1,4 +1,4 @@
-'''import torch
+import torch
 from torch import nn
 from einops import rearrange
 from torchvision.models import resnet50
@@ -116,10 +116,10 @@ class ResViT(nn.Module):
         x = self.transformer(x, mask)
         x = self.to_cls_token(x[:, 0])
         
-        return self.mlp_head(x)'''
+        return self.mlp_head(x)
 
 #new model pretrain resnet50
-import torch
+'''import torch
 from torch import nn
 from einops import rearrange
 from torchvision.models import resnet50
@@ -260,4 +260,4 @@ class ResViT(nn.Module):
         x = torch.cat((cls_tokens, x), dim=1)  # Concatenate along dimension 1
         x = self.transformer(x, mask)
         x = x.mean(dim=1)  # Average pooling over the patches
-        return self.mlp_head(x)
+        return self.mlp_head(x)'''
