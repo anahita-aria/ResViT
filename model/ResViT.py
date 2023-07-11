@@ -329,5 +329,5 @@ class ResViT(nn.Module):
         x += self.pos_embedding[:, 1:]  # Add positional embeddings to the patches
         x = self.transformer(x, mask)
         x = x.mean(dim=1)  # Average pooling over the patches
-    return self.mlp_head(x)
+        return self.mlp_head(x)
         
