@@ -214,9 +214,9 @@ class ResViT(nn.Module):
         super().__init__()
         assert image_size % patch_size == 0, 'image dimensions must be divisible by the patch size'
 
-        self.features = nn.Sequential(*list(resnet50(pretrained=True).children())[:-2])  # Use pre-trained ResNet50 features
+        self.features = nn.Sequential(*list(resnet50(pretrained=True).children())[:-2])
 
-        num_patches = (image_size // patch_size) ** 2  # Update the calculation of num_patches
+        num_patches = (image_size // patch_size) ** 2
         patch_dim = channels * patch_size ** 2
 
         self.patch_size = patch_size
@@ -237,29 +237,21 @@ class ResViT(nn.Module):
         x = self.features(img)
         b, c, h, w = x.shape
         
-        x = rearrange(x, 'b c h w -> b (h w) c')  # Rearrange dimensions
-        cls_tokens = self.to_cls_token(self.pos_embedding[:, :1, :])  # Use pos_embedding as the cls_token
-        cls_tokens = cls_tokens.expand(-1, x.size(1), -1)  # Expand cls_tokens to match the number of patches
+        x = rearrange(x, 'b c h w -> b (h w) c')
+        cls_tokens = self.to_cls_token(self.pos_embedding[:, :1, :])
+        cls_tokens = cls_tokens.expand(-1, x.size(1), -1)
     
-        # Resize cls_tokens if necessary to match the batch size
         if cls_tokens.size(0) < x.size(0):
             cls_tokens = cls_tokens.expand(x.size(0), -1, -1)
     
-        cls_tokens = cls_tokens[:, :x.size(1), :]  # Trim cls_tokens to match the number of patches in x
+        cls_tokens = cls_tokens[:, :x.size(1), :]
     
-        x = torch.cat((cls_tokens, x), dim=2)  # Concatenate along dimension 2
+        x = torch.cat((cls_tokens, x), dim=1)  # Concatenate along dimension 1
     
-        pos_emb = self.pos_embedding[:, :x.size(1)]  # Trim pos_embedding to match the number of patches in x
-        #pos_emb = pos_emb.unsqueeze(0).expand(x.size(0), -1, -1)  # Expand pos_emb to match the batch size
-        pos_emb = pos_emb.unsqueeze(0).expand(x.size(0), 1, 49, 1024)
+        pos_emb = self.pos_embedding[:, :x.size(1)]
+        pos_emb = pos_emb.unsqueeze(0).expand(x.size(0), -1, -1)
     
-        x += pos_emb  # Add positional embeddings to the patches
+        x += pos_emb
         x = self.transformer(x, mask)
         x = x.mean(dim=1)  # Average pooling over the patches
         return self.mlp_head(x)
-
-
-
-
-    
-        
