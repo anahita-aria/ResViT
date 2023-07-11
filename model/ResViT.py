@@ -291,7 +291,7 @@ class ResViT(nn.Module):
             image_size=224,
             patch_size=7,
             num_classes=2,
-            channels=512,
+            channels=2048,  # Update the channels parameter to match the output of ResNet50
             dim=1024,
             depth=6,
             heads=8,
@@ -331,6 +331,7 @@ class ResViT(nn.Module):
         x = self.transformer(x, mask)
         x = x.mean(dim=1)  # Average pooling over the patches
         return self.mlp_head(x)
+
 
     
         
