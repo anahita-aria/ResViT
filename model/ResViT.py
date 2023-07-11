@@ -256,7 +256,7 @@ class Attention(nn.Module):
         dots = torch.einsum('bhid,bhjd->bhij', q, k) * self.scale
 
         if mask is not None:
-            mask = F.pad(mask.flatten(1), (1, 0), value=True)
+            mask = nn.functional.pad(mask.flatten(1), (1, 0), value=True)
             assert mask.shape[-1] == dots.shape[-1], 'mask has incorrect dimensions'
             mask = mask[:, None, :] * mask[:, :, None]
             dots.masked_fill_(~mask, float('-inf'))
@@ -324,10 +324,13 @@ class ResViT(nn.Module):
         b, c, h, w = x.shape
         x = rearrange(x, 'b c h w -> b (h w) c')  # Rearrange dimensions
 
-        cls_tokens = self.to_cls_token(self.pos_embedding[:, 0])  # Use pos_embedding as the cls_token
-        x = torch.cat((cls_tokens, x), dim=1)    
-        x += self.pos_embedding[:, 1:]  # Add positional embeddings to the patches
+        cls_tokens = self.to_cls_token(self.pos_embedding[:, :1, :])  # Use pos_embedding as the cls_token
+        x = torch.cat((cls_tokens, x), dim=1)
+
+        x += self.pos_embedding[:, 1:, :]  # Add positional embeddings to the patches
         x = self.transformer(x, mask)
         x = x.mean(dim=1)  # Average pooling over the patches
         return self.mlp_head(x)
+
+    
         
