@@ -1,6 +1,7 @@
-'''import torch
+import torch
 from torch import nn
 from einops import rearrange
+from torchvision.models import resnet50
 from model.ResNet50 import ResNet50
 
 class Residual(nn.Module):
@@ -83,7 +84,8 @@ class ResViT(nn.Module):
                  dim=1024, depth=6, heads=8, mlp_dim=2048):
         super().__init__() 
         assert image_size % patch_size == 0, 'image dimensions must be divisible by the patch size'
-        self.features = ResNet50()
+        #self.features = ResNet50()
+        self.features = nn.Sequential(*list(resnet50(pretrained=True).children())[:-1])
         num_patches = (7 // patch_size) ** 2
         patch_dim = channels * patch_size ** 2
 
@@ -114,7 +116,7 @@ class ResViT(nn.Module):
         x = self.transformer(x, mask)
         x = self.to_cls_token(x[:, 0])
         
-        return self.mlp_head(x)'''
+        return self.mlp_head(x)
 # new model 
 '''import torch
 from torch import nn
@@ -203,7 +205,7 @@ class ResViT(nn.Module):
 
         return self.mlp_head(x)'''
 #new model pretrain resnet50
-import torch
+'''import torch
 from torch import nn
 from torchvision.models import resnet50
 from einops import rearrange
@@ -289,4 +291,4 @@ class ResViT(nn.Module):
         x = self.transformer(x, mask)
         x = self.to_cls_token(x[:, 0])
 
-        return self.mlp_head(x)
+        return self.mlp_head(x)'''
