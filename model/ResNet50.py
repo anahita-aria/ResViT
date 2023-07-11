@@ -75,17 +75,17 @@ class Block(nn.Module):
 class ResNet(nn.Module):
     def __init__(self, ResBlock, layer_list, num_classes, num_channels=3):
         super(ResNet, self).__init__()
-        self.in_channels = 16
+        self.in_channels = 64
         
-        self.conv1 = nn.Conv2d(num_channels,16, kernel_size=7, stride=2, bias=False)
-        self.batch_norm1 = nn.BatchNorm2d(16)
+        self.conv1 = nn.Conv2d(num_channels,64, kernel_size=7, stride=2, bias=False)
+        self.batch_norm1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU()
         self.max_pool = nn.MaxPool2d(kernel_size = 3, stride=2)
         
-        self.layer1 = self._make_layer(ResBlock, layer_list[0], planes=16)
-        self.layer2 = self._make_layer(ResBlock, layer_list[1], planes=32, stride=2)
-        self.layer3 = self._make_layer(ResBlock, layer_list[2], planes=64, stride=2)
-        self.layer4 = self._make_layer(ResBlock, layer_list[3], planes=128, stride=2)
+        self.layer1 = self._make_layer(ResBlock, layer_list[0], planes=64)
+        self.layer2 = self._make_layer(ResBlock, layer_list[1], planes=128, stride=2)
+        self.layer3 = self._make_layer(ResBlock, layer_list[2], planes=256, stride=2)
+        self.layer4 = self._make_layer(ResBlock, layer_list[3], planes=512, stride=2)
         
     def forward(self, x):
         x = self.relu(self.batch_norm1(self.conv1(x)))
