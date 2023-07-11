@@ -116,7 +116,7 @@ class ResViT(nn.Module):
         
         return self.mlp_head(x)'''
 # new model 
-import torch
+'''import torch
 from torch import nn
 from einops import rearrange
 from model.ResNet50 import ResNet50
@@ -196,6 +196,94 @@ class ResViT(nn.Module):
         p = self.patch_size
         x = self.features(img)
         y = rearrange(x, "b c (h p1) (w p2) -> b (h w) (p1 p2 c)", p1=p, p2=p)
+        y = self.patch_to_embedding(y)
+        x = torch.cat((self.pos_embedding, y), dim=1)
+        x = self.transformer(x, mask)
+        x = self.to_cls_token(x[:, 0])
+
+        return self.mlp_head(x)'''
+#new model pretrain resnet50
+import torch
+from torch import nn
+from torchvision.models import resnet50
+from einops import rearrange
+
+class PreNorm(nn.Module):
+    def __init__(self, dim, fn):
+        super().__init__()
+        self.norm = nn.LayerNorm(dim)
+        self.fn = fn
+
+    def forward(self, x, **kwargs):
+        return self.fn(self.norm(x), **kwargs)
+
+class FeedForward(nn.Module):
+    def __init__(self, dim, hidden_dim):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(dim, hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, dim)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+class Transformer(nn.Module):
+    def __init__(self, dim, depth, heads, mlp_dim):
+        super().__init__()
+        self.layers = nn.ModuleList([])
+        for _ in range(depth):
+            self.layers.append(nn.ModuleList([
+                PreNorm(dim, nn.MultiheadAttention(dim, heads=heads)),
+                PreNorm(dim, FeedForward(dim, mlp_dim))
+            ]))
+
+    def forward(self, x, mask=None):
+        for attn, ff in self.layers:
+            x = attn(x, x, x, mask=mask)[0]
+            x = ff(x)
+        return x
+
+class ResViT(nn.Module):
+    def __init__(
+        self,
+        image_size=112,  # Reduced image size
+        patch_size=4,  # Smaller patch size
+        num_classes=2,
+        channels=256,  # Decreased number of channels
+        dim=512,
+        depth=4,  # Decreased model depth
+        heads=8,
+        mlp_dim=1024,  # Smaller hidden dimension
+    ):
+        super().__init__()
+        assert (
+            image_size % patch_size == 0
+        ), "image dimensions must be divisible by the patch size"
+        self.features = nn.Sequential(*list(resnet50(pretrained=True).children())[:-1])
+        num_patches = (image_size // patch_size) ** 2
+        patch_dim = channels * patch_size ** 2
+
+        self.patch_size = patch_size
+
+        self.pos_embedding = nn.Parameter(torch.randn(1, num_patches + 1, dim))
+        self.patch_to_embedding = nn.Linear(patch_dim, dim)
+        self.transformer = Transformer(dim, depth, heads, mlp_dim)
+
+        self.to_cls_token = nn.Identity()
+
+        self.mlp_head = nn.Sequential(
+            nn.Linear(dim, mlp_dim),
+            nn.ReLU(),
+            nn.Linear(mlp_dim, num_classes),
+        )
+
+    def forward(self, img, mask=None):
+        p = self.patch_size
+        x = self.features(img)
+        x = rearrange(x, "b c h w -> b (h w) c")
+        y = rearrange(x, "b (h p1) (w p2) c -> b (h w) (p1 p2 c)", p1=p, p2=p)
         y = self.patch_to_embedding(y)
         x = torch.cat((self.pos_embedding, y), dim=1)
         x = self.transformer(x, mask)
