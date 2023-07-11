@@ -245,13 +245,13 @@ class ResViT(nn.Module):
             cls_tokens = cls_tokens.expand(x.size(0), -1, -1)
     
         cls_tokens = cls_tokens[:, :x.size(1), :]
-    
-        x = torch.cat((cls_tokens, x), dim=1)  # Concatenate along dimension 1
-    
+        
         pos_emb = self.pos_embedding[:, :x.size(1)]
         pos_emb = pos_emb.unsqueeze(0).expand(x.size(0), -1, -1)
-    
+
         x += pos_emb
+        x = torch.cat((cls_tokens, x), dim=2)  # Concatenate along dimension 2
         x = self.transformer(x, mask)
         x = x.mean(dim=1)  # Average pooling over the patches
         return self.mlp_head(x)
+
