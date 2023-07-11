@@ -248,7 +248,7 @@ class Transformer(nn.Module):
 class ResViT(nn.Module):
     def __init__(
         self,
-        image_size=112,  # Reduced image size
+        image_size=224,  # Reduced image size
         patch_size=4,  # Smaller patch size
         num_classes=2,
         channels=256,  # Decreased number of channels
