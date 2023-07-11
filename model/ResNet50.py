@@ -33,7 +33,7 @@ class Bottleneck(nn.Module):
         #downsample if needed
         if self.i_downsample is not None:
             identity = self.i_downsample(identity)
-        add identity
+        #add identity
         x+=identity
         x=self.relu(x)
         
