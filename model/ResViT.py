@@ -250,7 +250,8 @@ class ResViT(nn.Module):
         pos_emb = pos_emb.unsqueeze(0).unsqueeze(0)  # Unsqueezing twice
 
         # Expand dimensions to match the dimensions of 'x'
-        expand_dims = tuple(x.size(dim) for dim in range(pos_emb.dim()))
+        expand_dims = tuple(x.size(dim) for dim in range(pos_emb.dim() - 2))
+
         pos_emb = pos_emb.expand(*expand_dims)
 
 
