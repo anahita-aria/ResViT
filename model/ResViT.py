@@ -255,3 +255,4 @@ class ResViT(nn.Module):
         x = x.mean(dim=1)  # Average pooling over the patches
         return self.mlp_head(x)
 
+
