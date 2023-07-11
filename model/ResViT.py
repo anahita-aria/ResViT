@@ -240,7 +240,14 @@ class ResViT(nn.Module):
         x = rearrange(x, 'b c h w -> b (h w) c')  # Rearrange dimensions
         cls_tokens = self.to_cls_token(self.pos_embedding[:, :1, :])  # Use pos_embedding as the cls_token
         cls_tokens = cls_tokens.expand(-1, x.size(1), -1)  # Expand cls_tokens to match the number of patches
-        cls_tokens = cls_tokens[:, :x.size(1), :]  # Trim cls_tokens to match the number of patches in x
+    
+        # Trim cls_tokens to match the number of patches in x
+        cls_tokens = cls_tokens[:, :x.size(1), :]
+        
+        # Resize cls_tokens if necessary to match the batch size
+        if cls_tokens.size(0) < x.size(0):
+            cls_tokens = cls_tokens.expand(x.size(0), -1, -1)
+    
         x = torch.cat((cls_tokens, x), dim=1)
     
         x += self.pos_embedding[:, :x.size(1)]  # Add positional embeddings to the patches
