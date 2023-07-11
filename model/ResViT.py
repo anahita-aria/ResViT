@@ -207,15 +207,22 @@ class ResViT(nn.Module):
 #new model pretrain resnet50
 import torch
 from torch import nn
-from torchvision.models import resnet50
 from einops import rearrange
+from torchvision.models import resnet50
+
+class Residual(nn.Module):
+    def __init__(self, fn):
+        super().__init__()
+        self.fn = fn
+
+    def forward(self, x, **kwargs):
+        return self.fn(x, **kwargs) + x
 
 class PreNorm(nn.Module):
     def __init__(self, dim, fn):
         super().__init__()
         self.norm = nn.LayerNorm(dim)
         self.fn = fn
-        self.heads = heads
 
     def forward(self, x, **kwargs):
         return self.fn(self.norm(x), **kwargs)
@@ -232,46 +239,75 @@ class FeedForward(nn.Module):
     def forward(self, x):
         return self.net(x)
 
+class Attention(nn.Module):
+    def __init__(self, dim, heads=8):
+        super().__init__()
+        self.heads = heads
+        self.scale = dim ** -0.5
+
+        self.to_qkv = nn.Linear(dim, dim * 3, bias=False)
+        self.to_out = nn.Linear(dim, dim)
+
+    def forward(self, x, mask=None):
+        b, n, _, h = *x.shape, self.heads
+        qkv = self.to_qkv(x)
+        q, k, v = rearrange(qkv, 'b n (qkv h d) -> qkv b h n d', qkv=3, h=h)
+
+        dots = torch.einsum('bhid,bhjd->bhij', q, k) * self.scale
+
+        if mask is not None:
+            mask = F.pad(mask.flatten(1), (1, 0), value=True)
+            assert mask.shape[-1] == dots.shape[-1], 'mask has incorrect dimensions'
+            mask = mask[:, None, :] * mask[:, :, None]
+            dots.masked_fill_(~mask, float('-inf'))
+            del mask
+
+        attn = dots.softmax(dim=-1)
+
+        out = torch.einsum('bhij,bhjd->bhid', attn, v)
+        out = rearrange(out, 'b h n d -> b n (h d)')
+        out = self.to_out(out)
+        return out
+
 class Transformer(nn.Module):
     def __init__(self, dim, depth, heads, mlp_dim):
         super().__init__()
         self.layers = nn.ModuleList([])
         for _ in range(depth):
             self.layers.append(nn.ModuleList([
-                PreNorm(dim, nn.MultiheadAttention(dim, heads=heads)),
-                PreNorm(dim, FeedForward(dim, mlp_dim))
+                Residual(PreNorm(dim, Attention(dim, heads=heads))),
+                Residual(PreNorm(dim, FeedForward(dim, mlp_dim)))
             ]))
 
     def forward(self, x, mask=None):
         for attn, ff in self.layers:
-            x = attn(x, x, x, mask=mask)[0]
+            x = attn(x, mask=mask)
             x = ff(x)
         return x
 
 class ResViT(nn.Module):
     def __init__(
-        self,
-        image_size=224,  # Reduced image size
-        patch_size=4,  # Smaller patch size
-        num_classes=2,
-        channels=256,  # Decreased number of channels
-        dim=512,
-        depth=4,  # Decreased model depth
-        heads=8,
-        mlp_dim=1024,  # Smaller hidden dimension
+            self,
+            image_size=224,
+            patch_size=7,
+            num_classes=2,
+            channels=512,
+            dim=1024,
+            depth=6,
+            heads=8,
+            mlp_dim=2048
     ):
         super().__init__()
-        assert (
-            image_size % patch_size == 0
-        ), "image dimensions must be divisible by the patch size"
-        self.features = nn.Sequential(*list(resnet50(pretrained=True).children())[:-1])
+        assert image_size % patch_size == 0, 'image dimensions must be divisible by the patch size'
+
+        self.features = nn.Sequential(*list(resnet50(pretrained=True).children())[:-2])  # Use pre-trained ResNet50 features
+
         num_patches = (image_size // patch_size) ** 2
         patch_dim = channels * patch_size ** 2
 
         self.patch_size = patch_size
 
-        self.pos_embedding = nn.Parameter(torch.randn(1, num_patches + 1, dim))
-        self.patch_to_embedding = nn.Linear(patch_dim, dim)
+        self.pos_embedding = nn.Parameter(torch.randn(1, num_patches + 1, dim))  # Update the shape of pos_embedding
         self.transformer = Transformer(dim, depth, heads, mlp_dim)
 
         self.to_cls_token = nn.Identity()
@@ -279,17 +315,19 @@ class ResViT(nn.Module):
         self.mlp_head = nn.Sequential(
             nn.Linear(dim, mlp_dim),
             nn.ReLU(),
-            nn.Linear(mlp_dim, num_classes),
+            nn.Linear(mlp_dim, num_classes)
         )
 
     def forward(self, img, mask=None):
         p = self.patch_size
         x = self.features(img)
-        x = rearrange(x, "b c h w -> b (h w) c")
-        y = rearrange(x, "b (h p1) (w p2) c -> b (h w) (p1 p2 c)", p1=p, p2=p)
-        y = self.patch_to_embedding(y)
-        x = torch.cat((self.pos_embedding, y), dim=1)
-        x = self.transformer(x, mask)
-        x = self.to_cls_token(x[:, 0])
+        b, c, h, w = x.shape
+        x = rearrange(x, 'b c h w -> b (h w) c')  # Rearrange dimensions
 
-        return self.mlp_head(x)
+        cls_tokens = self.to_cls_token(self.pos_embedding[:, 0])  # Use pos_embedding as the cls_token
+        x = torch.cat((cls_tokens, x), dim=1)    
+        x += self.pos_embedding[:, 1:]  # Add positional embeddings to the patches
+        x = self.transformer(x, mask)
+        x = x.mean(dim=1)  # Average pooling over the patches
+    return self.mlp_head(x)
+        
