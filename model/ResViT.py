@@ -1,4 +1,4 @@
-import torch
+'''import torch
 from torch import nn
 from einops import rearrange
 from torchvision.models import resnet50
@@ -116,7 +116,7 @@ class ResViT(nn.Module):
         x = self.transformer(x, mask)
         x = self.to_cls_token(x[:, 0])
         
-        return self.mlp_head(x)
+        return self.mlp_head(x)'''
 # new model 
 '''import torch
 from torch import nn
@@ -205,7 +205,7 @@ class ResViT(nn.Module):
 
         return self.mlp_head(x)'''
 #new model pretrain resnet50
-'''import torch
+import torch
 from torch import nn
 from torchvision.models import resnet50
 from einops import rearrange
@@ -215,6 +215,7 @@ class PreNorm(nn.Module):
         super().__init__()
         self.norm = nn.LayerNorm(dim)
         self.fn = fn
+        self.heads = heads
 
     def forward(self, x, **kwargs):
         return self.fn(self.norm(x), **kwargs)
@@ -291,4 +292,4 @@ class ResViT(nn.Module):
         x = self.transformer(x, mask)
         x = self.to_cls_token(x[:, 0])
 
-        return self.mlp_head(x)'''
+        return self.mlp_head(x)
