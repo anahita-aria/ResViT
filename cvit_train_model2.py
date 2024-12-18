@@ -71,7 +71,7 @@ if cession=='t':
 
 batch_size, dataloaders, dataset_sizes = session(cession, dir_path, batch_size)
 
-#CViT model definition
+#ResViT model definition
 model = ResViT(image_size=224, patch_size=7, num_classes=2, channels=512,
             dim=1024, depth=6, heads=8, mlp_dim=2048)
 model.to(device)
@@ -98,7 +98,7 @@ def train_gpu(model, criterion, optimizer, scheduler, num_epochs, min_val_loss):
     val_loss = []
     val_accu = []
 
-    #with open('weight/cvit_deepfake_detection_ep_50.pkl', 'rb') as f:
+    #with open('weight/ResViT_deepfake_detection_ep_50.pkl', 'rb') as f:
     #    train_loss, train_accu, val_loss, val_accu = pickle.load(f)
 
     for epoch in range(num_epochs):
