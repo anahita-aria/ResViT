@@ -47,12 +47,12 @@ ran_min = abs(ran-1)
 filenames = sorted([x for x in os.listdir(sample) if x[-4:] == ".mp4"]) #[ran_min, ran] -  select video randomly
 mtcnn = MTCNN(select_largest=False, keep_all=True, post_process=False, device=device)
 
-#load cvit model
+#load ResViT model
 model = ResViT(image_size=224, patch_size=7, num_classes=2, channels=512,
              dim=1024, depth=6, heads=8, mlp_dim=2048)
 model.to(device)
 
-#checkpoint = torch.load('weight/deepfake_cvit_gpu_inference_ep_50.pth') # for GPU
+#checkpoint = torch.load('weight/deepfake_ResViT_gpu_inference_ep_50.pth') # for GPU
 checkpoint = torch.load('/kaggle/working/ResViT/weight/weights.pth', map_location=torch.device('cpu'))
 model.load_state_dict(checkpoint)
 _ = model.eval()
@@ -61,8 +61,8 @@ def predict_on_video(dfdc_filenames, num_workers):
     def process_file(i):
         filename = dfdc_filenames[i]
         print(filename)
-        decCViT = predict(os.path.join(sample, filename), tresh, mtcnn)
-        return decCViT
+        decResViT = predict(os.path.join(sample, filename), tresh, mtcnn)
+        return decResViT
 
     with ThreadPoolExecutor(max_workers=num_workers) as ex:
         predictions = ex.map(process_file, range(len(dfdc_filenames)))
@@ -187,7 +187,7 @@ def predict(filename, tresh, mtcnn):
     #store_mtcnn = face_tensor_mtcnn[:count_mtcn]
     
     dfdc_tensor=store_rec
-    #dfdc_tensor=[*store_rec,*store_blaze,*store_mtcnn] #testing CViT using all three dl libraries - expect lower accuracy.
+    #dfdc_tensor=[*store_rec,*store_blaze,*store_mtcnn] #testing ResViT using all three dl libraries - expect lower accuracy.
     
     dfdc_tensor = torch.tensor(dfdc_tensor, device=device).float()
 
@@ -209,20 +209,20 @@ def predict(filename, tresh, mtcnn):
         thrtw =32
         if df_len<33:
             thrtw =df_len  
-        y_predCViT = model(dfdc_tensor[0:thrtw])
+        y_predResViT = model(dfdc_tensor[0:thrtw])
         
         if df_len>32:
             dft = non_empty(dfdc_tensor, df_len, lower_bound=32, upper_bound=64, flag=True)
             if len(dft):
-                y_predCViT = pred_tensor(y_predCViT, model(dft))
+                y_predResViT = pred_tensor(y_predResViT, model(dft))
         if df_len>64:
             dft = non_empty(dfdc_tensor, df_len, lower_bound=64, upper_bound=90, flag=True)
             if len(dft):
-                y_predCViT = pred_tensor(y_predCViT, model(dft))
+                y_predResViT = pred_tensor(y_predResViT, model(dft))
         
-        decCViT = pre_process_prediction(pred_sig(y_predCViT))
-        print('CViT', filename, "Prediction:",decCViT.item())
-        return decCViT.item()
+        decResViT = pre_process_prediction(pred_sig(y_predResViT))
+        print('ResViT', filename, "Prediction:",decResViT.item())
+        return decResViT.item()
 
 def non_empty(dfdc_tensor, df_len, lower_bound, upper_bound, flag):
     
@@ -307,6 +307,6 @@ def real_or_fake(filenames, predictions):
         j+=1
         
 real_or_fake(filenames, predictions)
-submission_dfcvit_nov16 = pd.DataFrame({"filename": filenames, "label": predictions})
-submission_dfcvit_nov16.to_csv("cvit_predictions.csv", index=False)
+submission_dfResViT_nov16 = pd.DataFrame({"filename": filenames, "label": predictions})
+submission_dfResViT_nov16.to_csv("ResViT_predictions.csv", index=False)
     
