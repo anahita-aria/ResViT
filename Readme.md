@@ -1,4 +1,4 @@
-# Improved Deepfake Detection Using ResNet + Vision Transformer (ResViT)
+# Deepfake Video Detection Using ResNet + Vision Transformers (ResViT)
 
 This repository is based on [CViT](https://github.com/erprogs/CViT) and extends it by replacing the custom CNN feature extractor with modified **ResNet-50**, enhancing the model’s ability to detect frame-level deepfakes. The ResNet backbone improves feature quality and model generalization while maintaining computational efficiency.
 
@@ -188,9 +188,9 @@ ResViT/
 
 ---
 
-##  Author
+##  Authors
 
-Anahita Aria  
+Anahita Aria, Seyedeh Leyli MirTaheri, Seyyed Amir Asghari, Reza Shahbazian, Andrea Pugliese
 This project is intended for academic and research use.
 
 ---
@@ -201,7 +201,7 @@ If you use this work, please cite it using the following BibTeX:
 
 ```bibtex
 @misc{aria2025resvit,
-  author       = {Anahita Aria},
+  author       = {Anahita Aria}, {Seyedeh Leyli MirTaheri}, {Seyyed Amir Asghari}, {Reza Shahbazian}, {Andrea Pugliese}
   title        = {ResViT: Improved Deepfake Detection using ResNet and Vision Transformer},
   year         = {2025},
   howpublished = {\url{https://github.com/anahita-aria/ResViT}},
