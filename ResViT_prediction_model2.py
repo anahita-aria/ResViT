@@ -1,3 +1,4 @@
+#Imports
 import sys, os
 import cv2
 from facenet_pytorch import MTCNN
@@ -24,7 +25,7 @@ from helpers.helpers_read_video_1 import VideoReader
 from helpers.helpers_face_extract_1 import FaceExtractor
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
+#BlazeFace
 from helpers.blazeface import BlazeFace
 facedet = BlazeFace().to(device)
 facedet.load_weights("/kaggle/working/ResViT/helpers/blazeface.pth")
