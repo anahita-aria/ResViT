@@ -190,7 +190,7 @@ ResViT/
 
 ##  Authors
 
-Anahita Aria, Seyedeh Leyli MirTaheri, Seyyed Amir Asghari, Reza Shahbazian, Andrea Pugliese
+Anahita Aria, Seyedeh Leyli MirTaheri, Seyyed Amir Asghari, Reza Shahbazian, Andrea Pugliese  
 This project is intended for academic and research use.
 
 ---
