@@ -4,7 +4,7 @@ This repository is based on [CViT](https://github.com/erprogs/CViT) and extends 
 
 ---
 
-## 🔍 Differences from CViT
+##  Differences from CViT
 
 - **Feature Extractor**:  
   Replaced custom CNN with modified **ResNet-50** to extract more robust and hierarchical features from input frames.
@@ -157,7 +157,7 @@ python ResViT_prediction_model2.py \
 
 ---
 
-## 📄 Datasets
+##  Datasets
 
 This work is tested using:
 
