@@ -146,7 +146,7 @@ python ResViT_prediction_model2.py \
 - `--f (int)`: Number of frames to process.  
   *Example*: `30`
 
-- `--d (str)`: Dataset type: `dfdc`, `faceforensics`, `timit`, or `celeb`.
+- `--d (str)`: Dataset type: `dfdc`, `faceforensics`.
 
 - `--w (str)`: Path to model weights.  
   *Example*: `weight/resvit_ep_50.pth`
